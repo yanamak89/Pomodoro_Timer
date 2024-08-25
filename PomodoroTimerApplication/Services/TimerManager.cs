@@ -21,7 +21,7 @@ namespace PomodoroTimerApp.Services
         {
             running = true;
             pomodoroCount++;
-            Console.WriteLine("Таймер почався! Сесія: " + pomodoroCount);
+            Console.WriteLine("Timer started! Session: " + pomodoroCount);
             StartTimer(workDuration, OnWorkEnded);
         }
 
@@ -38,13 +38,13 @@ namespace PomodoroTimerApp.Services
                 if (seconds > 0)
                 {
                     Console.Clear();
-                    Console.WriteLine($"Залишилося часу: {seconds / 60:D2}:{seconds % 60:D2}");
+                    Console.WriteLine($"Time remaining: {seconds / 60:D2}:{seconds % 60:D2}");
                     seconds--;
                 }
                 else
                 {
-                    callback?.Invoke();
                     timer.Dispose();
+                    callback?.Invoke();
                 }
             }, null, 0, 1000); // Запуск таймера з інтервалом в 1 секунду
         }
@@ -52,15 +52,16 @@ namespace PomodoroTimerApp.Services
         public void Pause()
         {
             paused = !paused;
-            Console.WriteLine(paused ? "Таймер на паузі" : "Таймер продовжено");
+            Console.WriteLine(paused ? "Timer paused" : "Timer resumed");
         }
 
         public void Restart()
         {
+            Stop();
             paused = false;
             pomodoroCount = 0;
             Start();
-            Console.WriteLine("Таймер перезапущено");
+            Console.WriteLine("Timer restarted");
         }
 
         public void Stop()
@@ -68,42 +69,44 @@ namespace PomodoroTimerApp.Services
             paused = true;
             running = false;
             timer?.Dispose();
-            Console.WriteLine("Таймер зупинено");
+            Console.WriteLine("Timer stopped");
         }
 
         private void StartBreak()
         {
             int breakDurationToUse = (pomodoroCount % 4 == 0) ? longBreakDuration : breakDuration;
-            Console.WriteLine("Початок перерви");
-            StartTimer(breakDurationToUse, OnBreakEnded);
+            Console.WriteLine("Starting break");
+            StartTimer(breakDurationToUse, OnBreakEndedHandler);
         }
 
         public void OnWorkEndedHandler()
         {
-            Console.WriteLine("Час на перерву!");
+            Console.WriteLine("Work session ended! Time for a break.");
             StartBreak();
         }
 
         public void OnBreakEndedHandler()
         {
-            Console.WriteLine("Перерва закінчилася, повертаємось до роботи!");
+            Console.WriteLine("Break ended! Time to get back to work.");
             OnWorkStarted?.Invoke();
-            Start(); // Після перерви запускається новий цикл роботи
+            Start(); 
         }
-        
+
+        public void EndBreak()
+        {
+            Console.WriteLine("Ending break...");
+            OnBreakEnded?.Invoke();
+        }
+
         public void EndWork()
         {
             OnWorkEnded?.Invoke();
         }
 
-        public void EndBreak()
-        {
-            OnBreakEnded?.Invoke();
-        }
-
         public void StartWork()
         {
             OnWorkStarted?.Invoke();
+            Start();
         }
     }
 }

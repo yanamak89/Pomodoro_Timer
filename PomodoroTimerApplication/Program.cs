@@ -9,56 +9,64 @@ namespace PomodoroTimer
         {
             string workEndSoundPath = "/Users/yanamakogon/RiderProjects/PomodoroTimerApplication/PomodoroTimerApplication/Resources/work_end.wav";
             string relaxVoiceSoundPath = "/Users/yanamakogon/RiderProjects/PomodoroTimerApplication/PomodoroTimerApplication/Resources/relax_voice.wav";
-
-            CustomSoundPlayer soundPlayer = new CustomSoundPlayer();
+            
+            CustomSoundPlayer soundPlayer = new CustomSoundPlayer(null);
             MessageNotifier messageNotifier = new MessageNotifier();
             TimerManager timerManager = new TimerManager();
             
             timerManager.OnWorkEnded += () =>
             {
-                soundPlayer.PlaySound(workEndSoundPath);
-                messageNotifier.ShowMessage("Час на перерву!");
+                soundPlayer = new CustomSoundPlayer(workEndSoundPath);
+                soundPlayer.PlaySound();
+                messageNotifier.ShowMessage("Time for a break!");
 
-                soundPlayer.PlaySound(relaxVoiceSoundPath);
-                System.Threading.Thread.Sleep(3000); // 3 секунди
+                // If we want to play a relaxation voice after the work ends:
+                soundPlayer = new CustomSoundPlayer(relaxVoiceSoundPath);
+                soundPlayer.PlaySound();
+                
+                System.Threading.Thread.Sleep(3000);
 
-                Console.WriteLine("Чи хочете ви слухати музику для медитації? (y/n)");
-                var response = Console.ReadLine();
-                if (response?.ToLower() == "y")
+                Console.WriteLine("Do you want to listen to meditation music? (y/n)");
+
+                var responce = Console.ReadLine();
+                if (responce?.ToLower() == "y")
                 {
                     soundPlayer.PlayRandomMeditationMusic();
                 }
-
-                // Переходимо до перерви, але не викликаємо новий цикл роботи негайно
-                System.Threading.Thread.Sleep(10000); // Додаємо невеликий інтервал часу між циклами
-                timerManager.EndBreak(); // Викликаємо завершення перерви
+                
+                System.Threading.Thread.Sleep(10000); 
+                timerManager.EndBreak(); 
             };
 
             timerManager.OnBreakEnded += () =>
             {
-                soundPlayer.PlaySound(workEndSoundPath);
-                messageNotifier.ShowMessage("Перерва закінчена!");
+                soundPlayer = new CustomSoundPlayer(workEndSoundPath);
+                soundPlayer.PlaySound();
+                messageNotifier.ShowMessage("Break is over!");
 
-                // Починаємо нову сесію роботи
-                System.Threading.Thread.Sleep(10000); // Додаємо невеликий інтервал часу перед початком нової сесії
+                System.Threading.Thread.Sleep(3000); // Додаємо невеликий інтервал часу перед початком нової сесії
                 timerManager.StartWork();
             };
 
             timerManager.OnWorkStarted += () =>
             {
-                soundPlayer.PlaySound(workEndSoundPath);
-                messageNotifier.ShowMessage("Час знову працювати! Починається нова сесія.");
-
+                soundPlayer = new CustomSoundPlayer(workEndSoundPath);
+                soundPlayer.PlaySound();
+                messageNotifier.ShowMessage("Time to work again! A new session is starting.");
                 timerManager.Start();
             };
 
-            // Показати інструкції користувачу
-            Console.WriteLine("Натисніть 'S', щоб розпочати таймер, 'P' для паузи/продовження, 'R' для перезапуску, 'X' для зупинки, або 'Q' для виходу.");
+            Console.WriteLine("Press: " +
+                              "\n'S' to start the timer, " +
+                              "\n'P' to pause/resume, " +
+                              "\n'R' to restart, " +
+                              "\n'X' to stop, " +
+                              "\n'Q' to quit.");
 
             while (true)
             {
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-                Console.WriteLine($"Натиснуто клавішу: {keyInfo.Key}");
+                Console.WriteLine($"Key pressed: {keyInfo.Key}");
 
                 switch (keyInfo.Key)
                 {
@@ -76,10 +84,10 @@ namespace PomodoroTimer
                         break;
                     case ConsoleKey.Q:
                         timerManager.Stop();
-                        Console.WriteLine("Вихід з програми...");
+                        Console.WriteLine("Exiting the application...");
                         return;
                     default:
-                        Console.WriteLine("Невідома команда. Спробуйте ще раз.");
+                        Console.WriteLine("Unknown command. Please try again.");
                         break;
                 }
             }

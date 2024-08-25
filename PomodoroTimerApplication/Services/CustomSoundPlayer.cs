@@ -6,13 +6,12 @@ public class CustomSoundPlayer
 {
     private readonly string soundFilePath;
 
-    // public CustomSoundPlayer(string soundFilePath)
-    // {
-    //     this.soundFilePath = soundFilePath;
-    // }
+    public CustomSoundPlayer(string soundFilePath)
+    {
+        this.soundFilePath = soundFilePath;
+    }
 
-    //public void PlaySound()
-    public void PlaySound(string soundFilePath)
+    public void PlaySound()
     {
         var process = new ProcessStartInfo
         {
@@ -27,14 +26,34 @@ public class CustomSoundPlayer
 
     public void PlayRandomMeditationMusic()
     {
-        var random = new Random();
-        string[] meditationTracks =
+        string musicDirectory = "/Users/yanamakogon/RiderProjects/PomodoroTimerApplication/PomodoroTimerApplication/Resources/Meditation";
+
+        string[] musicFiles = Directory.GetFiles(musicDirectory, "*.mp3");
+        if (musicFiles.Length == 0)
         {
-            "/Users/yanamakogon/RiderProjects/PomodoroTimerApplication/PomodoroTimerApplication/Resources/meditation_music2wav.mp3",
-            "/Users/yanamakogon/RiderProjects/PomodoroTimerApplication/PomodoroTimerApplication/Resources/meditation_music3wav.mp3",
-            "/Users/yanamakogon/RiderProjects/PomodoroTimerApplication/PomodoroTimerApplication/Resources/meditation_music4wav.mp3",
+            Console.WriteLine("No meditation music files found in the directory.");
+            return;
+        }
+
+        Random random = new Random();
+        int randomIndex = random.Next(musicFiles.Length);
+        string randomMusicFile = musicFiles[randomIndex];
+
+        Console.WriteLine($"Playing meditation music: {Path.GetFileName(randomMusicFile)}");
+
+        PlaySoundFile(randomMusicFile);
+    }
+
+    private void PlaySoundFile(string filePath)
+    {
+        var process = new ProcessStartInfo
+        {
+            FileName = "/usr/bin/afplay",
+            Arguments = filePath,
+            RedirectStandardOutput = false,
+            UseShellExecute = false,
+            CreateNoWindow = true,
         };
-        string selectedTrack = meditationTracks[random.Next(meditationTracks.Length)];
-        PlaySound(selectedTrack);
+        Process.Start(process);
     }
 }
