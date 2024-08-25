@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using PomodoroTimerApplication;
 
 namespace PomodoroTimerApp.Services
 {
@@ -16,6 +17,13 @@ namespace PomodoroTimerApp.Services
         public event Action OnWorkEnded;
         public event Action OnBreakEnded;
         public event Action OnWorkStarted;
+
+        private CustomSoundPlayer soundPlayer;
+
+        public TimerManager(CustomSoundPlayer soundPlayer)
+        {
+            this.soundPlayer = soundPlayer;
+        }
 
         public void Start()
         {
@@ -46,7 +54,7 @@ namespace PomodoroTimerApp.Services
                     timer.Dispose();
                     callback?.Invoke();
                 }
-            }, null, 0, 1000); // Запуск таймера з інтервалом в 1 секунду
+            }, null, 0, 1000); // Timer interval set to 1 second
         }
 
         public void Pause()
@@ -57,7 +65,6 @@ namespace PomodoroTimerApp.Services
 
         public void Restart()
         {
-            Stop();
             paused = false;
             pomodoroCount = 0;
             Start();
@@ -76,9 +83,9 @@ namespace PomodoroTimerApp.Services
         {
             int breakDurationToUse = (pomodoroCount % 4 == 0) ? longBreakDuration : breakDuration;
             Console.WriteLine("Starting break");
+            soundPlayer.PlayRandomMeditationMusic(breakDurationToUse / 1000);
             StartTimer(breakDurationToUse, OnBreakEndedHandler);
         }
-
         public void OnWorkEndedHandler()
         {
             Console.WriteLine("Work session ended! Time for a break.");
@@ -87,6 +94,7 @@ namespace PomodoroTimerApp.Services
 
         public void OnBreakEndedHandler()
         {
+            soundPlayer.StopMusic();
             Console.WriteLine("Break ended! Time to get back to work.");
             OnWorkStarted?.Invoke();
             Start(); 
@@ -106,7 +114,6 @@ namespace PomodoroTimerApp.Services
         public void StartWork()
         {
             OnWorkStarted?.Invoke();
-            Start();
         }
     }
 }

@@ -10,19 +10,21 @@ namespace PomodoroTimer
             string workEndSoundPath = "/Users/yanamakogon/RiderProjects/PomodoroTimerApplication/PomodoroTimerApplication/Resources/work_end.wav";
             string relaxVoiceSoundPath = "/Users/yanamakogon/RiderProjects/PomodoroTimerApplication/PomodoroTimerApplication/Resources/relax_voice.wav";
             
-            CustomSoundPlayer soundPlayer = new CustomSoundPlayer(null);
+            CustomSoundPlayer soundPlayer = new CustomSoundPlayer(workEndSoundPath);
+            CustomSoundPlayer relaxSoundPlayer = new CustomSoundPlayer(relaxVoiceSoundPath);
             MessageNotifier messageNotifier = new MessageNotifier();
-            TimerManager timerManager = new TimerManager();
+            TimerManager timerManager = new TimerManager(soundPlayer);
             
             timerManager.OnWorkEnded += () =>
             {
-                soundPlayer = new CustomSoundPlayer(workEndSoundPath);
+               // soundPlayer = new CustomSoundPlayer(workEndSoundPath);
                 soundPlayer.PlaySound();
                 messageNotifier.ShowMessage("Time for a break!");
-
+                relaxSoundPlayer.PlaySound();
+                
                 // If we want to play a relaxation voice after the work ends:
-                soundPlayer = new CustomSoundPlayer(relaxVoiceSoundPath);
-                soundPlayer.PlaySound();
+                // soundPlayer = new CustomSoundPlayer(relaxVoiceSoundPath);
+                // soundPlayer.PlaySound();
                 
                 System.Threading.Thread.Sleep(3000);
 
@@ -40,17 +42,16 @@ namespace PomodoroTimer
 
             timerManager.OnBreakEnded += () =>
             {
-                soundPlayer = new CustomSoundPlayer(workEndSoundPath);
+                soundPlayer.StopMusic();  // Stop meditation music when the break ends
                 soundPlayer.PlaySound();
                 messageNotifier.ShowMessage("Break is over!");
 
-                System.Threading.Thread.Sleep(3000); // Додаємо невеликий інтервал часу перед початком нової сесії
+                System.Threading.Thread.Sleep(10000); 
                 timerManager.StartWork();
             };
 
             timerManager.OnWorkStarted += () =>
             {
-                soundPlayer = new CustomSoundPlayer(workEndSoundPath);
                 soundPlayer.PlaySound();
                 messageNotifier.ShowMessage("Time to work again! A new session is starting.");
                 timerManager.Start();
